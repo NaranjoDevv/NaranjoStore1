@@ -16,7 +16,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
-            {children}
+            <main className="flex-grow container mx-auto px-4">
+                {children}
+            </main>
             <footer className="py-8 mt-16 font-mono tracking-tighter text-center">
                 <p className="uppercase text-sm">
                     "©  NARANJO INDUSTRIES 2025 "

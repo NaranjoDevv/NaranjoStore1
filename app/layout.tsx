@@ -3,8 +3,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/header/header";
 import Toast from "@/components/ui/Toast";
+import { SessionProvider } from "next-auth/react";
+import ClientLayout from "@/components/ClientLayout";
+import Header from "@/components/header/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,23 +28,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientLayout>{children}</ClientLayout>
+        <SessionProvider>
+          <ClientLayout>{children}</ClientLayout>
+          <Toast />
+        </SessionProvider>
       </body>
     </html>
   );
 }
 
-function ClientLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      {children}
-      <footer className="py-8 mt-16 font-mono tracking-tighter text-center">
-        <p className="uppercase text-sm">
-          "©  NARANJO INDUSTRIES 2025 "
-        </p>
-      </footer>
-      <Toast />
-    </div>
-  );
-}

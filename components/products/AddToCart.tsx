@@ -36,7 +36,7 @@ export default function AddToCart({ item }: { item: OrderItem }) {
         </div>
     ) : (
         <button
-            className="bg-black text-white py-3 px-6 uppercase text-sm tracking-widest hover:bg-white hover:text-black hover:outline hover:outline-2 hover:outline-black transition-all duration-200 ease-in-out w-full"
+            className="bg-black text-white py-3 px-6 uppercase text-sm tracking-widest hover:bg-white hover:text-black hover:outline  hover:outline-black transition-all duration-200 ease-in-out w-full"
             type="button"
             onClick={addToCartHandler}
         >

@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import useCartService from "@/lib/hooks/useCartStore"
+import { useSession, signOut } from 'next-auth/react'
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { items } = useCartService();
     const [mounted, setMounted] = useState(false);
+    const { data: session } = useSession();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,22 +38,63 @@ const Header = () => {
 
                 {/* Desktop Menu */}
                 <ul className="hidden md:flex gap-8 uppercase text-sm tracking-widest">
-                    <li>
-                        <Link href={'/cart'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white relative'>
-                            "CART"
-                            {mounted && cartItemsCount > 0 && (
-                                <span className={`absolute -top-0 -right-5 w-4 h-4 flex items-center justify-center text-xs
-                                    ${isScrolled ? 'bg-white text-black' : 'bg-black text-white'}`}>
-                                    {cartItemsCount}
+
+                    {session ? (
+                        <>
+
+                            <li className="flex items-center">
+                                <span className="uppercase tracking-widest">
+                                    {session.user.name || session.user.email}
                                 </span>
-                            )}
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href={'/login'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white'>
-                            "LOGIN"
-                        </Link>
-                    </li>
+                            </li>
+
+                            <li>
+                                <Link href={'/cart'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white relative'>
+                                    "CART"
+                                    {mounted && cartItemsCount > 0 && (
+                                        <span className={`absolute -top-0 -right-5 w-4 h-4 flex items-center justify-center text-xs
+                                    ${isScrolled ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                                            {cartItemsCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            </li>
+
+                            <li>
+                                <button
+                                    onClick={() => signOut()}
+                                    className='hover:line-through transition-all duration-200 ease-in-out hover:text-white uppercase text-sm tracking-widest'
+                                >
+                                    "LOGOUT"
+                                </button>
+                            </li>
+                        </>
+                    ) : (
+                        <>
+
+                            <li>
+                                <Link href={'/cart'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white relative'>
+                                    "CART"
+                                    {mounted && cartItemsCount > 0 && (
+                                        <span className={`absolute -top-0 -right-5 w-4 h-4 flex items-center justify-center text-xs
+                                    ${isScrolled ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                                            {cartItemsCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            </li>
+
+                            <li>
+                                <Link href={'/login'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white'>
+                                    "LOGIN"
+                                </Link>
+                            </li>
+
+                        </>
+
+                    )}
+
+
                 </ul>
 
                 {/* Mobile Menu Button */}
@@ -69,6 +112,11 @@ const Header = () => {
 
                 <div className={`h-full w-full flex flex-col justify-center items-center transition-transform duration-300 ease-in-out
                     ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                    {session && (
+                        <div className="text-white text-xs uppercase tracking-widest mb-8">
+                            {session.user.name || session.user.email}
+                        </div>
+                    )}
                     <ul className="flex flex-col gap-8 uppercase text-xl tracking-widest text-white font-mono">
                         <li className="text-center">
                             <Link
@@ -93,15 +141,29 @@ const Header = () => {
                                 )}
                             </Link>
                         </li>
-                        <li className="text-center">
-                            <Link
-                                href={'/login'}
-                                className='hover:line-through transition-all duration-200 ease-in-out'
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                "LOGIN"
-                            </Link>
-                        </li>
+                        {session ? (
+                            <li className="text-center">
+                                <button
+                                    onClick={() => {
+                                        signOut();
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className='hover:line-through transition-all duration-200 ease-in-out'
+                                >
+                                    "LOGOUT"
+                                </button>
+                            </li>
+                        ) : (
+                            <li className="text-center">
+                                <Link
+                                    href={'/login'}
+                                    className='hover:line-through transition-all duration-200 ease-in-out'
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    "LOGIN"
+                                </Link>
+                            </li>
+                        )}
                     </ul>
 
                     {/* Close Button Centered at Bottom */}
