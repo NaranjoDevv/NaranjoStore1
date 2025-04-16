@@ -1,32 +1,52 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import useCartService from "@/lib/hooks/useCartStore"
 import { useSession, signOut } from 'next-auth/react'
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const { items } = useCartService();
     const [mounted, setMounted] = useState(false);
     const { data: session } = useSession();
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
 
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setIsUserMenuOpen(false);
+            }
+        };
+
         window.addEventListener('scroll', handleScroll);
+        document.addEventListener('mousedown', handleClickOutside);
         setMounted(true);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
+    const toggleUserMenu = () => {
+        setIsUserMenuOpen(!isUserMenuOpen);
+    };
+
     const cartItemsCount = mounted ? items.reduce((a, c) => a + c.qty, 0) : 0;
+
+    // No renderizar nada hasta que el componente esté montado
+    if (!mounted) return null;
 
     return (
         <header className={`sticky top-0 z-50 transition-all duration-200 ease-in-out
@@ -42,10 +62,60 @@ const Header = () => {
                     {session ? (
                         <>
 
-                            <li className="flex items-center">
-                                <span className="uppercase tracking-widest">
+                            <li className="relative">
+                                <button
+                                    onClick={toggleUserMenu}
+                                    className="flex items-center uppercase tracking-widest hover:line-through transition-all duration-200 ease-in-out"
+                                >
                                     {session.user.name || session.user.email}
-                                </span>
+                                    <span className="ml-1">{isUserMenuOpen ? '▲' : '▼'}</span>
+                                </button>
+
+                                {isUserMenuOpen && (
+                                    <div
+                                        ref={userMenuRef}
+                                        className={`absolute top-full right-0 mt-2 w-48 py-2 
+                                        ${isScrolled ? 'bg-black text-white' : 'bg-white text-black'} 
+                                        shadow-xl z-50 border border-gray-200`}
+                                    >
+                                        <Link
+                                            href="/profile"
+                                            className="block px-4 py-2 hover:bg-gray-100 hover:text-black uppercase text-sm tracking-widest"
+                                            onClick={() => setIsUserMenuOpen(false)}
+                                        >
+                                            "PERFIL"
+                                        </Link>
+
+                                        {session.user.isAdmin && (
+                                            <>
+                                                <Link
+                                                    href="/admin/products"
+                                                    className="block px-4 py-2 hover:bg-gray-100 hover:text-black uppercase text-sm tracking-widest"
+                                                    onClick={() => setIsUserMenuOpen(false)}
+                                                >
+                                                    "PRODUCTOS"
+                                                </Link>
+                                                <Link
+                                                    href="/admin/users"
+                                                    className="block px-4 py-2 hover:bg-gray-100 hover:text-black uppercase text-sm tracking-widest"
+                                                    onClick={() => setIsUserMenuOpen(false)}
+                                                >
+                                                    "USUARIOS"
+                                                </Link>
+                                            </>
+                                        )}
+
+                                        <button
+                                            onClick={() => {
+                                                signOut();
+                                                setIsUserMenuOpen(false);
+                                            }}
+                                            className='block w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black uppercase text-sm tracking-widest'
+                                        >
+                                            "CERRAR SESIÓN"
+                                        </button>
+                                    </div>
+                                )}
                             </li>
 
                             <li>
@@ -58,15 +128,6 @@ const Header = () => {
                                         </span>
                                     )}
                                 </Link>
-                            </li>
-
-                            <li>
-                                <button
-                                    onClick={() => signOut()}
-                                    className='hover:line-through transition-all duration-200 ease-in-out hover:text-white uppercase text-sm tracking-widest'
-                                >
-                                    "LOGOUT"
-                                </button>
                             </li>
                         </>
                     ) : (
@@ -142,17 +203,50 @@ const Header = () => {
                             </Link>
                         </li>
                         {session ? (
-                            <li className="text-center">
-                                <button
-                                    onClick={() => {
-                                        signOut();
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className='hover:line-through transition-all duration-200 ease-in-out'
-                                >
-                                    "LOGOUT"
-                                </button>
-                            </li>
+                            <>
+                                <li className="text-center">
+                                    <Link
+                                        href="/profile"
+                                        className='hover:line-through transition-all duration-200 ease-in-out'
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        "PROFILE"
+                                    </Link>
+                                </li>
+                                {session.user.isAdmin && (
+                                    <>
+                                        <li className="text-center">
+                                            <Link
+                                                href="/admin/products"
+                                                className='hover:line-through transition-all duration-200 ease-in-out'
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                "PRODUCTS"
+                                            </Link>
+                                        </li>
+                                        <li className="text-center">
+                                            <Link
+                                                href="/admin/users"
+                                                className='hover:line-through transition-all duration-200 ease-in-out'
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                "USERS"
+                                            </Link>
+                                        </li>
+                                    </>
+                                )}
+                                <li className="text-center">
+                                    <button
+                                        onClick={() => {
+                                            signOut();
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className='hover:line-through transition-all duration-200 ease-in-out'
+                                    >
+                                        "LOG OUT"
+                                    </button>
+                                </li>
+                            </>
                         ) : (
                             <li className="text-center">
                                 <Link
