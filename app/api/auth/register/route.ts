@@ -5,28 +5,40 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password } = await req.json();
+    // In the POST handler:
+    const { name, email, password, phone, address } = await req.json();
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+    if (!name || !email || !password || !phone || !address) {
+      return NextResponse.json(
+        { message: "Todos los campos son requeridos" },
+        { status: 400 }
+      );
     }
 
-    await dbConnect();
-
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json({ message: "Email already registered" }, { status: 400 });
+    // Validate Colombian phone format
+    if (!/^\+57[0-9]{10}$/.test(phone)) {
+      return NextResponse.json(
+        { message: "Formato de teléfono inválido" },
+        { status: 400 }
+      );
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
-
+    // In user creation:
     const user = await UserModel.create({
       name,
       email,
-      password: hashedPassword,
+      password: await bcrypt.hash(password, 10),
+      phone,
+      address,
     });
 
-    return NextResponse.json({ message: "User registered successfully", user: { name: user.name, email: user.email } }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "User registered successfully",
+        user: { name: user.name, email: user.email },
+      },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }

@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -18,20 +18,22 @@ export const authOptions: NextAuthOptions = {
         }
 
         await dbConnect();
-        
+
         const user = await UserModel.findOne({ email: credentials.email });
-        
+
         if (user && bcrypt.compareSync(credentials.password, user.password)) {
           return {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
+            phone: user.phone,
+            address: user.address,
           };
         }
-        
+
         return null;
-      }
+      },
     }),
   ],
   session: {
@@ -40,21 +42,27 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.isAdmin = user.isAdmin;
         token.id = user.id;
+        token.isAdmin = user.isAdmin;
+        // Añadir estos campos al token
+        token.phone = user.phone;
+        token.address = user.address;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.isAdmin = token.isAdmin as boolean;
+      if (session.user) {
         session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
+        // Añadir estos campos a la sesión
+        session.user.phone = token.phone as string;
+        session.user.address = token.address as string;
       }
       return session;
     },
   },
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

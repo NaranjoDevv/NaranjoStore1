@@ -13,11 +13,21 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [phone, setPhone] = useState('')
+  const [countryCode, setCountryCode] = useState('+57') // Default to Colombia
+  const [address, setAddress] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+
+    // Validate Colombian phone format (10 digits after country code)
+    const fullPhone = `${countryCode}${phone}`
+    if (fullPhone !== '+57' && !/^\+57[0-9]{10}$/.test(fullPhone)) {
+      setError('El número celular debe tener 10 dígitos (ej: 3001234567)')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -29,7 +39,13 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          phone: fullPhone,
+          address
+        }),
       })
 
       const data = await res.json()
@@ -116,6 +132,49 @@ export default function RegisterPage() {
               required
             />
           </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block uppercase text-sm tracking-widest mb-2">
+                Código país
+              </label>
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-full p-3 bg-transparent border border-gray-300 focus:outline-none focus:border-black"
+              >
+                <option value="+57">CO +57</option>
+                {/* <option value="+1">🇺🇸 +1</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+593">🇪🇨 +593</option> */}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block uppercase text-sm tracking-widest mb-2">
+                Número celular
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                placeholder="3001234567"
+                className="w-full p-3 bg-transparent border border-gray-300 focus:outline-none focus:border-black"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block uppercase text-sm tracking-widest mb-2">
+              Dirección completa
+            </label>
+            <textarea
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full p-3 bg-transparent border border-gray-300 focus:outline-none focus:border-black h-32"
+              placeholder="Ej: Carrera 45 # 20-10, Barrio El Poblado, Medellín"
+              required
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -124,17 +183,7 @@ export default function RegisterPage() {
             {loading ? '"REGISTERING..."' : '"REGISTER"'}
           </button>
         </form>
-        <div className="mt-8 text-center">
-          <p className="uppercase text-sm tracking-widest">
-            "ALREADY HAVE AN ACCOUNT?"
-          </p>
-          <Link
-            href="/login"
-            className="mt-2 inline-block uppercase text-sm tracking-widest hover:line-through transition-all duration-200 ease-in-out"
-          >
-            "LOGIN"
-          </Link>
-        </div>
+
       </div>
     </div>
   )
