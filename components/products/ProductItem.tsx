@@ -1,10 +1,11 @@
 import { Product } from "@/lib/models/ProductModel";
 import Image from "next/image";
 import Link from "next/link";
+import { formatPrice } from "@/lib/formatPrice";
 
 export default function ProductItem({ product }: { product: Product }) {
     return (
-        <div className="relative bg-gradient-to-b from-white to-gray-300 hover:from-gray-900 hover:to-black hover:text-white transition-all duration-300 ease-in-out p-4 group hover:transform hover:translate-y-[-5px] hover:outline hover:outline-2 hover:outline-white hover:outline-offset-4">
+        <div className="relative bg-gradient-to-b from-white to-gray-300 hover:from-gray-900 hover:to-black hover:text-white transition-all duration-300 ease-in-out p-4 group hover:transform hover:translate-y-[-5px] hover:outline  hover:outline-white hover:outline-offset-4">
             <figure className="relative overflow-hidden">
                 <Link href={`/product/${product.slug}`}>
                     <div className="aspect-square overflow-hidden">
@@ -30,26 +31,12 @@ export default function ProductItem({ product }: { product: Product }) {
                     </span>
                 </div>
 
-                <p className="uppercase text-sm tracking-widest mt-2 text-black group-hover:text-white">
-                    "{product.brand}"
-                </p>
 
-                <div className="mt-3 flex items-center">
-                    <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                            <span key={i} className={`text-sm ${i < Math.floor(product.rating) ? 'text-black group-hover:text-white' : 'text-gray-300 group-hover:text-gray-600'}`}>
-                                ★
-                            </span>
-                        ))}
-                    </div>
-                    <span className="ml-2 text-xs text-black group-hover:text-white">
-                        "({product.numReviews})"
-                    </span>
-                </div>
+
 
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-2xl font-light text-black group-hover:text-white">
-                        "${product.price}"
+                        "${formatPrice(product.price)}"
                     </span>
 
                     <span className={`text-xs uppercase tracking-widest ${product.countInStock > 0 ? 'text-black group-hover:text-white' : 'text-red-500 group-hover:text-red-300'}`}>

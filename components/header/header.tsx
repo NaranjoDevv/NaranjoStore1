@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import useCartService from "@/lib/hooks/useCartStore"
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { items } = useCartService();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -13,12 +16,15 @@ const Header = () => {
         };
 
         window.addEventListener('scroll', handleScroll);
+        setMounted(true);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
+
+    const cartItemsCount = mounted ? items.reduce((a, c) => a + c.qty, 0) : 0;
 
     return (
         <header className={`sticky top-0 z-50 transition-all duration-200 ease-in-out
@@ -31,8 +37,14 @@ const Header = () => {
                 {/* Desktop Menu */}
                 <ul className="hidden md:flex gap-8 uppercase text-sm tracking-widest">
                     <li>
-                        <Link href={'/cart'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white'>
+                        <Link href={'/cart'} className='hover:line-through transition-all duration-200 ease-in-out hover:text-white relative'>
                             "CART"
+                            {mounted && cartItemsCount > 0 && (
+                                <span className={`absolute -top-0 -right-5 w-4 h-4 flex items-center justify-center text-xs
+                                    ${isScrolled ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                                    {cartItemsCount}
+                                </span>
+                            )}
                         </Link>
                     </li>
                     <li>
@@ -70,10 +82,15 @@ const Header = () => {
                         <li className="text-center">
                             <Link
                                 href={'/cart'}
-                                className='hover:line-through transition-all duration-200 ease-in-out'
+                                className='hover:line-through transition-all duration-200 ease-in-out relative'
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 "CART"
+                                {mounted && cartItemsCount > 0 && (
+                                    <span className="absolute -top-2 -right-4 bg-white text-black w-4 h-4 flex items-center justify-center text-xs">
+                                        {cartItemsCount}
+                                    </span>
+                                )}
                             </Link>
                         </li>
                         <li className="text-center">

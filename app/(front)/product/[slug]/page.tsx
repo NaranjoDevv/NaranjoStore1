@@ -6,6 +6,8 @@ import Link from "next/link";
 import ZoomableImage from "@/lib/ZoomableImage";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import AddToCart from "@/components/products/AddToCart";
+import { formatPrice } from "@/lib/formatPrice";
 
 export default function ProductDetails() {
     const { slug } = useParams(); // <- usa el hook para acceder a params
@@ -85,7 +87,7 @@ export default function ProductDetails() {
                     </div>
 
                     {/* Sección de precio */}
-                    <div className="text-3xl font-light">"${product.price}"</div>
+                    <div className="text-3xl font-light">"${formatPrice(product.price)}"</div>
 
                     {/* Sección de colores */}
                     <div className="border-t border-gray-200 pt-6">
@@ -132,19 +134,19 @@ export default function ProductDetails() {
                             </div>
                         </div>
 
-                        {/* Reviews */}
+                        {/* Reviews - Ajustado para ser responsivo */}
                         <div>
                             <h3 className="text-sm uppercase tracking-widest mb-4">"REVIEWS"</h3>
-                            <div className="border border-gray-300 p-4 inline-block">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex">
+                            <div className="border border-gray-300 p-4 max-w-full overflow-hidden">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                    <div className="flex flex-shrink-0">
                                         {[...Array(5)].map((_, i) => (
                                             <span key={i} className={`text-xl ${i < Math.floor(product.rating) ? 'text-white' : 'text-gray-500'}`}>
                                                 ★
                                             </span>
                                         ))}
                                     </div>
-                                    <span className="text-sm uppercase tracking-widest text-white">
+                                    <span className="text-xs sm:text-sm uppercase tracking-widest text-white whitespace-nowrap">
                                         "{product.numReviews} REVIEWS"
                                     </span>
                                 </div>
@@ -155,9 +157,7 @@ export default function ProductDetails() {
                     {/* Botón de añadir al carrito */}
                     {product.countInStock > 0 && (
                         <div className="pt-6 border-t border-gray-200">
-                            <button className="bg-black text-white py-3 px-6 uppercase text-sm tracking-widest hover:bg-white hover:text-black hover:outline hover:outline-2 hover:outline-black transition-all duration-200 ease-in-out w-full">
-                                "ADD TO CART"
-                            </button>
+                            <AddToCart item={{ ...product, qty: 0, color: '', size: '' }} />
                         </div>
                     )}
                 </div>
