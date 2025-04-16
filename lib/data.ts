@@ -1,4 +1,33 @@
+import bcrypt from "bcryptjs";
+
 const data = {
+  users: [
+    {
+      name: "John Doe",
+      email: "john@example.com",
+      password: bcrypt.hashSync("password123"),
+      isAdmin: true,
+    },
+    {
+      name: "Jane Smith",
+      email: "jane@example.com",
+      password: bcrypt.hashSync("passwor3"),
+      isAdmin: false,
+    },
+    {
+      name: "Carlos Rodríguez",
+      email: "carlos@example.com",
+      password: bcrypt.hashSync("passwor123"),
+      isAdmin: false,
+    },
+    {
+      name: "María López",
+      email: "maria@example.com",
+      password: bcrypt.hashSync("password13"),
+      isAdmin: false,
+    },
+  ],
+
   products: [
     {
       name: "Free Shirt",
@@ -70,6 +99,22 @@ const data = {
       category: "Shoes",
       image: "/images/shoes1.jpg",
       price: 600000,
+      brand: "Adidas",
+      rating: 4.6,
+      numReviews: 20,
+      countInStock: 18,
+      description: "Comfortable running shoes",
+      isFeatured: false,
+      banner: "/images/banner5.jpg",
+      colors: ["White/Blue", "Black/Red", "Gray/Green"],
+      sizes: ["7", "8", "9", "10", "11", "12"],
+    },
+    {
+      name: "Otaku Shoes",
+      slug: "Otaku-shoes",
+      category: "Shoes",
+      image: "/images/shoes1.jpg",
+      price: 30000,
       brand: "Adidas",
       rating: 4.6,
       numReviews: 20,
