@@ -5,7 +5,7 @@ import { formatPrice } from "@/lib/formatPrice";
 
 export default function ProductItem({ product }: { product: Product }) {
     return (
-        <div className="relative bg-gradient-to-b from-white to-gray-300 hover:from-gray-900 hover:to-black hover:text-white transition-all duration-300 ease-in-out p-4 group hover:transform hover:translate-y-[-5px] hover:outline  hover:outline-white hover:outline-offset-4">
+        <div className="relative bg-gradient-to-b from-white to-gray-400 hover:from-gray-900 hover:to-black hover:text-white transition-all duration-300 ease-in-out p-4 group hover:transform hover:translate-y-[-5px] hover:outline  hover:outline-white hover:outline-offset-4">
             <figure className="relative overflow-hidden">
                 <Link href={`/product/${product.slug}`}>
                     <div className="aspect-square overflow-hidden">

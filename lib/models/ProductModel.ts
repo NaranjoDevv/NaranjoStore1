@@ -35,6 +35,7 @@ export type Product = {
   banner?: string;
   price: number;
   brand: string;
+  isFeatured: boolean;
   description: string;
   category: string;
   rating: number;
