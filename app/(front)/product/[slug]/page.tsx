@@ -8,10 +8,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AddToCart from "@/components/products/AddToCart";
 import { formatPrice } from "@/lib/formatPrice";
+import { OrderItem } from "@/lib/models/OrderModel";
+import useCartService from "@/lib/hooks/useCartStore";
 
 export default function ProductDetails() {
-    const { slug } = useParams(); // <- usa el hook para acceder a params
+    const { slug } = useParams();
     const [isMediumScreen, setIsMediumScreen] = useState(false);
+    const [selectedColor, setSelectedColor] = useState('');
+    const [selectedSize, setSelectedSize] = useState('');
+    const { findCartItem } = useCartService();
 
     const product = data.products.find((x) => x.slug === slug);
 
@@ -23,8 +28,18 @@ export default function ProductDetails() {
         checkScreenSize();
         window.addEventListener('resize', checkScreenSize);
 
+        // Establecer valores predeterminados para color y talla
+        if (product) {
+            if (product.colors && product.colors.length > 0) {
+                setSelectedColor(product.colors[0]);
+            }
+            if (product.sizes && product.sizes.length > 0) {
+                setSelectedSize(product.sizes[0]);
+            }
+        }
+
         return () => window.removeEventListener('resize', checkScreenSize);
-    }, []);
+    }, [product]);
 
     if (!product) {
         return (
@@ -45,6 +60,21 @@ export default function ProductDetails() {
             </div>
         );
     }
+
+    // Crear el item para el carrito con la variante seleccionada
+    const cartItem: OrderItem = {
+        name: product.name,
+        slug: product.slug,
+        qty: 1,
+        image: product.image,
+        price: product.price,
+        color: selectedColor,
+        size: selectedSize,
+        variantId: `${product.slug}-${selectedColor || 'default'}-${selectedSize || 'onesize'}`
+    };
+
+    // Verificar si esta variante ya está en el carrito
+    const existingItem = findCartItem(product.slug, selectedColor, selectedSize);
 
     return (
         <div className="py-8 font-mono tracking-tighter">
@@ -90,76 +120,67 @@ export default function ProductDetails() {
                     <div className="text-3xl font-light">"${formatPrice(product.price)}"</div>
 
                     {/* Sección de colores */}
-                    <div className="border-t border-gray-200 pt-6">
-                        <h3 className="text-sm uppercase tracking-widest mb-4">"COLORS"</h3>
-                        <div className="flex gap-2">
-                            {['#000000', '#FFFFFF', '#FF0000', '#0000FF'].map((color, index) => (
-                                <div
-                                    key={index}
-                                    className="w-8 h-8 border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
-                                    style={{ backgroundColor: color }}
-                                />
-                            ))}
+                    {product.colors && product.colors.length > 0 && (
+                        <div className="border-t border-gray-200 pt-6">
+                            <h3 className="text-sm uppercase tracking-widest mb-4">"COLORS"</h3>
+                            <div className="flex gap-2">
+                                {product.colors.map((color, index) => (
+                                    <div
+                                        key={index}
+                                        className={`w-8 h-8 border cursor-pointer transition-all duration-200 ${
+                                            selectedColor === color 
+                                                ? 'border-black ring-1 ring-black' 
+                                                : 'border-gray-300 hover:scale-110'
+                                        }`}
+                                        style={{ backgroundColor: color }}
+                                        onClick={() => setSelectedColor(color)}
+                                        title={color}
+                                    />
+                                ))}
+                            </div>
+                            <p className="text-xs uppercase tracking-widest mt-2">
+                                "SELECTED: {selectedColor || 'NONE'}"
+                            </p>
                         </div>
-                    </div>
+                    )}
 
                     {/* Sección de tallas */}
-                    <div className="pt-2">
-                        <h3 className="text-sm uppercase tracking-widest mb-4">"SIZES"</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {['S', 'M', 'L', 'XL'].map((size, index) => (
-                                <div
-                                    key={index}
-                                    className="px-4 py-2 border border-gray-300 cursor-pointer hover:bg-white hover:text-black transition-all duration-200 ease-in-out uppercase text-xs tracking-widest"
-                                >
-                                    {size}
-                                </div>
-                            ))}
+                    {product.sizes && product.sizes.length > 0 && (
+                        <div className="pt-2">
+                            <h3 className="text-sm uppercase tracking-widest mb-4">"SIZES"</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {product.sizes.map((size, index) => (
+                                    <div
+                                        key={index}
+                                        className={`w-10 h-10 border flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                                            selectedSize === size 
+                                                ? 'border-black bg-black text-white' 
+                                                : 'border-gray-300 hover:bg-gray-100'
+                                        }`}
+                                        onClick={() => setSelectedSize(size)}
+                                    >
+                                        {size}
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs uppercase tracking-widest mt-2">
+                                "SELECTED: {selectedSize || 'NONE'}"
+                            </p>
                         </div>
-                    </div>
+                    )}
 
                     {/* Sección de descripción */}
                     <div className="border-t border-gray-200 pt-6">
-                        <h2 className="text-xl uppercase mb-4">"DESCRIPTION"</h2>
-                        <p className="text-white">"{product.description}"</p>
-                    </div>
-
-                    {/* Sección de stock y reviews */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
-                        {/* Stock */}
-                        <div>
-                            <h3 className="text-sm uppercase tracking-widest mb-4">"AVAILABILITY"</h3>
-                            <div className={`inline-block text-sm uppercase tracking-widest ${product.countInStock > 0 ? 'text-white' : 'text-red-500'} border border-gray-300 px-4 py-2`}>
-                                "{product.countInStock > 0 ? `${product.countInStock} IN STOCK` : 'OUT OF STOCK'}"
-                            </div>
-                        </div>
-
-                        {/* Reviews - Ajustado para ser responsivo */}
-                        <div>
-                            <h3 className="text-sm uppercase tracking-widest mb-4">"REVIEWS"</h3>
-                            <div className="border border-gray-300 p-4 max-w-full overflow-hidden">
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                                    <div className="flex flex-shrink-0">
-                                        {[...Array(5)].map((_, i) => (
-                                            <span key={i} className={`text-xl ${i < Math.floor(product.rating) ? 'text-white' : 'text-gray-500'}`}>
-                                                ★
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <span className="text-xs sm:text-sm uppercase tracking-widest text-white whitespace-nowrap">
-                                        "{product.numReviews} REVIEWS"
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <h3 className="text-sm uppercase tracking-widest mb-4">"DESCRIPTION"</h3>
+                        <p className="text-sm leading-relaxed">
+                            {product.description}
+                        </p>
                     </div>
 
                     {/* Botón de añadir al carrito */}
-                    {product.countInStock > 0 && (
-                        <div className="pt-6 border-t border-gray-200">
-                            <AddToCart item={{ ...product, qty: 0, color: '', size: '' }} />
-                        </div>
-                    )}
+                    <div className="pt-6">
+                        <AddToCart item={cartItem} existingItem={existingItem} />
+                    </div>
                 </div>
             </div>
         </div>

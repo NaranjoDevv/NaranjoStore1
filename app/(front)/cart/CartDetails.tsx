@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/formatPrice";
 
 export default function CartDetails() {
     const router = useRouter();
-    const { items, itemsPrice, taxPrice, shippingPrice, totalPrice, decrease, increase } = useCartService();
+    const { items, itemsPrice, taxPrice, shippingPrice, totalPrice, decrease, increase, removeItem } = useCartService();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -43,7 +43,7 @@ export default function CartDetails() {
                         </div>
 
                         {items.map((item) => (
-                            <div key={item.slug} className="grid grid-cols-12 gap-4 py-4 border-b border-gray-200 items-center">
+                            <div key={item.variantId || item.slug} className="grid grid-cols-12 gap-4 py-4 border-b border-gray-200">
                                 <div className="col-span-6 flex gap-4 items-center">
                                     <div className="w-20 h-20 bg-gradient-to-b from-white to-gray-300 p-1">
                                         <Image
@@ -54,39 +54,58 @@ export default function CartDetails() {
                                             className="object-cover w-full h-full"
                                         />
                                     </div>
-                                    <div>
-                                        <Link
-                                            href={`/product/${item.slug}`}
-                                            className="hover:line-through transition-all duration-200 ease-in-out"
-                                        >
-                                            {item.name}
-                                        </Link>
-                                        <p className="text-xs uppercase tracking-widest mt-1">{item.color || 'Default'} | {item.size || 'One Size'}</p>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-center">
+                                            <Link
+                                                href={`/product/${item.slug}`}
+                                                className="hover:line-through transition-all duration-200 ease-in-out"
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        </div>
+                                        <p className="text-xs uppercase tracking-widest mt-1">
+                                            {item.color || 'Default'} | {item.size || 'One Size'}
+                                        </p>
                                     </div>
                                 </div>
 
                                 <div className="col-span-2 flex items-center justify-center gap-2">
                                     <button
-                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-black hover:text-white transition-all duration-200 ease-in-out"
+                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-black hover:text-white transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                                         onClick={() => decrease(item)}
+                                        disabled={item.qty <= 1}
                                     >
                                         -
                                     </button>
                                     <span className="w-8 text-center">{item.qty}</span>
                                     <button
-                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-black hover:text-white transition-all duration-200 ease-in-out"
+                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-black hover:text-white transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                                         onClick={() => increase(item)}
+                                        disabled={item.qty >= 10}
                                     >
                                         +
                                     </button>
                                 </div>
 
                                 <div className="col-span-2 text-center">
-                                    ${formatPrice(item.price)}
+                                    <span className="text-lg font-medium">
+                                        ${formatPrice(item.price)}
+                                    </span>
                                 </div>
 
                                 <div className="col-span-2 text-center">
-                                    ${formatPrice(item.price * item.qty)}
+                                    <span className="text-lg font-medium">
+                                        ${formatPrice(item.price * item.qty)}
+                                    </span>
+                                </div>
+
+                                <div className="col-span-12 flex justify-end mt-2">
+                                    <button
+                                        onClick={() => removeItem(item)}
+                                        className="text-sm uppercase tracking-widest hover:line-through transition-all duration-200 ease-in-out text-gray-600"
+                                    >
+                                        Remove
+                                    </button>
                                 </div>
                             </div>
                         ))}

@@ -62,19 +62,51 @@ export default function useCartService() {
 
   const { showNotification } = notificationStore();
 
+  // Función para generar un ID único para cada variante
+  const generateVariantId = (item: OrderItem): string => {
+    return `${item.slug}-${item.color || "default"}-${item.size || "onesize"}`;
+  };
+
   return {
     items,
     itemsPrice,
     taxPrice,
     shippingPrice,
     totalPrice,
+    findCartItem: (slug: string, color?: string, size?: string) => {
+      const variantId = generateVariantId({
+        slug,
+        color: color || undefined,
+        size: size || undefined,
+      } as OrderItem);
+      
+      return items.find((x) => x.variantId === variantId);
+    },
     increase: (item: OrderItem) => {
-      const exist = items.find((x) => x.slug === item.slug);
+      // Asegurarse de que el item tenga un variantId
+      const itemWithVariantId = {
+        ...item,
+        variantId: item.variantId || generateVariantId(item),
+      };
+      
+      // Buscar por variantId en lugar de solo por slug
+      const exist = items.find(
+        (x) => x.variantId === itemWithVariantId.variantId
+      );
+      
+      // Limitar la cantidad máxima a 10 unidades
+      if (exist && exist.qty >= 10) {
+        showNotification("Maximum quantity reached (10)");
+        return;
+      }
+
       const updatedCartItems = exist
         ? items.map((x) =>
-            x.slug === exist.slug ? { ...exist, qty: exist.qty + 1 } : x
+            x.variantId === exist.variantId
+              ? { ...exist, qty: exist.qty + 1 }
+              : x
           )
-        : [...items, { ...item, qty: 1 }];
+        : [...items, { ...itemWithVariantId, qty: 1 }];
 
       const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
         CalcPrice(updatedCartItems);
@@ -89,20 +121,54 @@ export default function useCartService() {
 
       // Mostrar notificación solo cuando se añade por primera vez
       if (!exist) {
-        showNotification(`${item.name} - ADDED TO CART`);
+        const colorInfo = item.color ? ` - ${item.color}` : '';
+        const sizeInfo = item.size ? ` - ${item.size}` : '';
+        showNotification(`${item.name}${colorInfo}${sizeInfo} - ADDED TO CART`);
       }
     },
     decrease: (item: OrderItem) => {
-      const exist = items.find((x) => x.slug === item.slug);
+      // Asegurarse de que el item tenga un variantId
+      const itemWithVariantId = {
+        ...item,
+        variantId: item.variantId || generateVariantId(item),
+      };
+      
+      // Buscar por variantId en lugar de solo por slug
+      const exist = items.find(
+        (x) => x.variantId === itemWithVariantId.variantId
+      );
+      
       if (!exist) return;
 
       const updatedCartItems =
         exist.qty === 1
-          ? items.filter((x) => x.slug !== item.slug)
+          ? items.filter((x) => x.variantId !== itemWithVariantId.variantId)
           : items.map((x) =>
-              x.slug === exist.slug ? { ...exist, qty: exist.qty - 1 } : x
+              x.variantId === exist.variantId ? { ...exist, qty: exist.qty - 1 } : x
             );
 
+      const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+        CalcPrice(updatedCartItems);
+
+      cartStore.setState({
+        items: updatedCartItems,
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+      });
+    },
+    removeItem: (item: OrderItem) => {
+      // Asegurarse de que el item tenga un variantId
+      const itemWithVariantId = {
+        ...item,
+        variantId: item.variantId || generateVariantId(item),
+      };
+      
+      const updatedCartItems = items.filter(
+        (x) => x.variantId !== itemWithVariantId.variantId
+      );
+      
       const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
         CalcPrice(updatedCartItems);
 

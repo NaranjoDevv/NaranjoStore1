@@ -6,4 +6,5 @@ export type OrderItem = {
   price: number;
   color: string;
   size: string;
+  variantId: string;
 };
