@@ -4,6 +4,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --spacing-mobile: 1rem;
+  --spacing-desktop: 2rem;
 }
 
 @theme inline {
@@ -24,6 +26,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom duration for transitions */
@@ -49,4 +53,36 @@ body {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Mejoras para dispositivos móviles */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  .container {
+    padding-left: var(--spacing-mobile);
+    padding-right: var(--spacing-mobile);
+  }
+  
+  /* Mejora de espaciado en móviles */
+  .mobile-py {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  /* Mejora de transiciones táctiles */
+  button, a {
+    transition: transform 0.2s ease;
+  }
+  
+  button:active, a:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Mejora de scroll suave */
+html {
+  scroll-behavior: smooth;
 }

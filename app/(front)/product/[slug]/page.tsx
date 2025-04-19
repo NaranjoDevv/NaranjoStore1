@@ -77,14 +77,14 @@ export default function ProductDetails() {
     const existingItem = findCartItem(product.slug, selectedColor, selectedSize);
 
     return (
-        <div className="py-8 font-mono tracking-tighter">
-            <div className="mb-8">
+        <div className="py-4 md:py-8 font-mono tracking-tighter">
+            <div className="mb-4 md:mb-8">
                 <Link href={"/"} className="uppercase text-sm tracking-widest hover:line-through transition-all duration-200 ease-in-out">
                     BACK TO PRODUCTS
                 </Link>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-12">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-12">
                 {isMediumScreen ? (
                     <ZoomableImage
                         src={product.image}
@@ -93,24 +93,25 @@ export default function ProductDetails() {
                         height={640}
                     />
                 ) : (
-                    <div className="relative bg-gradient-to-b from-white to-gray-300 p-4">
+                    <div className="relative bg-gradient-to-b from-white to-gray-300 p-2 md:p-4">
                         <Image
                             src={product.image}
                             alt={product.name}
                             width={640}
                             height={640}
                             className="object-cover w-full aspect-square"
+                            priority
                         />
                     </div>
                 )}
 
-                <div className="space-y-8">
+                <div className="space-y-6 md:space-y-8">
                     {/* Sección superior: Nombre, categoría y marca */}
-                    <div className="border-b border-gray-200 pb-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <h1 className="text-3xl uppercase">"{product.name}"</h1>
-                            <span className="uppercase text-xs tracking-widest bg-black text-white px-3 py-1">
-                                "{product.category}"
+                    <div className="border-b border-gray-200 pb-4 md:pb-6">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                            <h1 className="text-2xl md:text-3xl uppercase mb-2 md:mb-0">"{product.name}"</h1>
+                            <span className="uppercase text-xs tracking-widest bg-black text-white px-3 py-1 self-start md:self-auto">
+                                {product.category}
                             </span>
                         </div>
                         <p className="uppercase text-sm tracking-widest">"{product.brand}"</p>
