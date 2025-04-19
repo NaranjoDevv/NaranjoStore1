@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'  // Remove 'update' from here
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 
 
 export default function ProfilePage() {
-    const { data: session, status, update } = useSession() // Add update here
+    const { data: session, status, update } = useSession()
     const router = useRouter()
 
     const [name, setName] = useState('')
@@ -83,10 +83,6 @@ export default function ProfilePage() {
                 setPassword('')
                 setConfirmPassword('')
 
-                // Forzar actualización de la sesión en la UI
-                setTimeout(() => {
-                    window.location.reload()
-                }, 1000) // Esperar 1 segundo para que el usuario vea el mensaje de éxito
             }
         } catch (err) {
             setError('An error occurred. Please try again.')
