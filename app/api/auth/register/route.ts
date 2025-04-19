@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/lib/models/UserModel";
 import bcrypt from "bcryptjs";
 
