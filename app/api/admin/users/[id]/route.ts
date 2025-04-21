@@ -7,7 +7,7 @@ import UserModel from "@/lib/models/UserModel";
 // DELETE - Eliminar un usuario por ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -19,7 +19,7 @@ export async function DELETE(
     );
   }
 
-  const userId = params.id;
+  const userId = context.params.id;
 
   try {
     await dbConnect();
@@ -51,7 +51,7 @@ export async function DELETE(
 // PUT - Actualizar un usuario por ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -63,7 +63,7 @@ export async function PUT(
     );
   }
 
-  const userId = params.id;
+  const userId = context.params.id;
 
   try {
     await dbConnect();
@@ -72,43 +72,25 @@ export async function PUT(
     const data = await req.json();
     const { name, email, isAdmin, phone, address } = data;
 
-    // Verificar si el usuario existe
-    const user = await UserModel.findById(userId);
-    if (!user) {
+    // No permitir que un administrador se elimine a sí mismo
+    if (userId === session.user.id) {
+      return NextResponse.json(
+        { message: "Cannot delete your own admin account" },
+        { status: 400 }
+      );
+    }
+
+    const deletedUser = await UserModel.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Verificar si el email ya está en uso por otro usuario
-    if (email !== user.email) {
-      const existingUser = await UserModel.findOne({ email });
-      if (existingUser && existingUser._id.toString() !== userId) {
-        return NextResponse.json(
-          { message: "Email already in use" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Actualizar el usuario
-    user.name = name;
-    user.email = email;
-    user.isAdmin = isAdmin;
-    if (phone) user.phone = phone;
-    if (address) user.address = address;
-
-    await user.save();
-
-    // Devolver el usuario actualizado sin la contraseña
-    const updatedUser = await UserModel.findById(userId).select("-password");
-
-    return NextResponse.json({
-      message: "User updated successfully",
-      user: updatedUser,
-    });
+    return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error deleting user:", error);
     return NextResponse.json(
-      { message: "Failed to update user" },
+      { message: "Failed to delete user" },
       { status: 500 }
     );
   }
