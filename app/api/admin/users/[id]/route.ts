@@ -64,11 +64,13 @@ export async function PUT(
   }
 
   const userId = params.id;
-  const data = await req.json();
-  const { name, email, isAdmin, phone, address } = data;
 
   try {
     await dbConnect();
+
+    // Ensure we can parse the request body
+    const data = await req.json();
+    const { name, email, isAdmin, phone, address } = data;
 
     // Verificar si el usuario existe
     const user = await UserModel.findById(userId);
