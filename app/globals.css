@@ -60,24 +60,26 @@ body {
   h1 {
     font-size: 1.75rem !important;
   }
-  
+
   .container {
     padding-left: var(--spacing-mobile);
     padding-right: var(--spacing-mobile);
   }
-  
+
   /* Mejora de espaciado en móviles */
   .mobile-py {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
   }
-  
+
   /* Mejora de transiciones táctiles */
-  button, a {
+  button,
+  a {
     transition: transform 0.2s ease;
   }
-  
-  button:active, a:active {
+
+  button:active,
+  a:active {
     transform: scale(0.98);
   }
 }
